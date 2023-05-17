@@ -11,27 +11,21 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-import static com.kontekapp.housingloan.enums.LoanTypeEnum.HOUSING;
-import static java.math.BigDecimal.valueOf;
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.valueOf;
 import static java.math.RoundingMode.HALF_UP;
-import static java.util.Optional.ofNullable;
 
 @Component
-public class LoanPaymentService implements CalculationService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoanPaymentService.class);
+public class HousingLoanPaymentService implements CalculationStrategy {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HousingLoanPaymentService.class);
 
     @Override
     public PaymentSchedule calculateMonthlyPayments(Loan loan) {
-        Loan housingLoan = ofNullable(loan)
-                .filter(loanType -> HOUSING.equals(loan.loanType()))
-                .orElseThrow(NoSuchElementException::new);
 
         BigDecimal loanAmount = loan.loanAmount();
-        final BigDecimal monthlyInterestRate = getMonthlyInterestRate(loan.annualInterestRate());
-        final int termsInMonths = housingLoan.termsInYears() * 12;
+        final BigDecimal monthlyInterestRate = getMonthlyInterestRate(loan.loanType().getRate());
+        final int termsInMonths = loan.termsInYears() * 12;
 
         BigDecimal monthlyPaymentAmount = getMonthlyPaymentAmount(loanAmount, monthlyInterestRate, termsInMonths);
 

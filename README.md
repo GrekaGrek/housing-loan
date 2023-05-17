@@ -29,5 +29,5 @@ We do not expect this to be implemented.
 
 For very quick check can use curl command from terminal passing different values into Json:
 
-curl -d ' { "annualInterestRate" : "3.5", "termsInYears" : "10", "loanAmount" : "10000", "loanType" : "HOUSING" } ' 
+curl -d ' { "termsInYears" : "10", "loanAmount" : "10000", "loanType" : "HOUSING" } ' 
 -H "Content-Type: application/json" -X POST http://localhost:8089/api/payments

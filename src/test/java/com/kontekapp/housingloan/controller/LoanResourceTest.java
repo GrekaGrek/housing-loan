@@ -3,8 +3,8 @@ package com.kontekapp.housingloan.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kontekapp.housingloan.model.Loan;
-import com.kontekapp.housingloan.model.PaymentSchedule;
-import com.kontekapp.housingloan.service.LoanPaymentService;
+import com.kontekapp.housingloan.service.HousingLoanPaymentService;
+import com.kontekapp.housingloan.service.LoanPaymentCalcFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static com.kontekapp.housingloan.enums.LoanTypeEnum.HOUSING;
 import static com.kontekapp.housingloan.enums.LoanTypeEnum.TRIP_TO_MARS;
@@ -30,10 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LoanResourceTest {
 
     private static final String API_URL = "/api/payments";
-    private final Loan LOAN = createLoan(valueOf(5), valueOf(150000));
+    private final Loan LOAN = createLoan(valueOf(150000));
 
     @Mock
-    private LoanPaymentService mockLoanPaymentService;
+    private LoanPaymentCalcFactory mockLoanPaymentCalcFactory;
 
     @InjectMocks
     private LoanResource controller;
@@ -47,9 +46,7 @@ class LoanResourceTest {
 
     @Test
     void createPaymentsSuccessfully() throws Exception {
-        var expectedResponse = new PaymentSchedule(List.of());
-
-        when(mockLoanPaymentService.calculateMonthlyPayments(LOAN)).thenReturn(expectedResponse);
+        when(mockLoanPaymentCalcFactory.createStrategy(LOAN)).thenReturn(new HousingLoanPaymentService());
 
         mockMvc.perform(
                         post(API_URL)
@@ -59,7 +56,7 @@ class LoanResourceTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        verify(mockLoanPaymentService).calculateMonthlyPayments(LOAN);
+        verify(mockLoanPaymentCalcFactory).createStrategy(LOAN);
     }
 
     @Test
@@ -71,7 +68,7 @@ class LoanResourceTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
-        verifyNoInteractions(mockLoanPaymentService);
+        verifyNoInteractions(mockLoanPaymentCalcFactory);
     }
 
     @Test
@@ -84,8 +81,8 @@ class LoanResourceTest {
                 .andExpect(status().isNotFound());
     }
 
-    private Loan createLoan(BigDecimal annualInterestRate, BigDecimal loanAmount) {
-        return new Loan(annualInterestRate, 20, loanAmount, HOUSING);
+    private Loan createLoan(BigDecimal loanAmount) {
+        return new Loan( 20, loanAmount, HOUSING);
     }
 
     private static String mapToJson(Object obj) throws JsonProcessingException {

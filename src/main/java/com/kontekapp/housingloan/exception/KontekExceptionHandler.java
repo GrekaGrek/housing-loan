@@ -11,11 +11,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
-public class KontekExceptionHandler extends ResponseEntityExceptionHandler {
+class KontekExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = NoSuchElementException.class)
+    @ExceptionHandler(value = IllegalStateException.class)
     protected ResponseEntity<Object> handleException(RuntimeException ex, WebRequest request) {
-        String bodyOfResponse = "Provided wrong type of loan";
-        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
+        String bodyOfResponse = "Calculations for provided type of loan not implemented yet";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 }
